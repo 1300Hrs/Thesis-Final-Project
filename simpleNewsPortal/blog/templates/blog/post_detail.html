@@ -1,0 +1,80 @@
+{% extends 'blog/base.html' %}
+{% block title %} Post Detail {% endblock title %}
+{% block content %}
+    <article class="media content-section">
+        <div class="row g-0">
+            <div class="col mt-3 ps-3">
+                <img src="{{ object.author.profile.image.url }}" class="rounded-circle article-img">
+            </div>
+            <div class="col-lg-10 media-body">
+                <div class="article-metadata">
+                    <span>Author: {{ object.author }}</span>
+                    <small class="px-2 text-muted">Posted: {{ object.date_created | timesince}}</small>
+                    <small class="px-2 text-muted">category: {{ post.categories.first }}</small>
+
+                    {% if object.author == user %}
+                    <div>
+                        <a href="{% url 'post_update' object.id %}" class="btn btn-outline-secondary btn-sm my-1"> Edit </a>
+                        <a href="{% url 'post_delete' object.id %}" class="btn btn-outline-danger btn-sm my-1"> Delete </a>
+                    </div>
+                    
+                    {% endif %}
+
+                </div>
+                <div class="container">
+                    <h2 class="article-title">{{ object.title }}</h2>
+                    <p class="article-content">{{ object.content}}</p>
+                    {% if object.image %}
+                    <img src="{{ object.image.url }}" class="rounded mb-3 img-fluid " alt="Post image">
+                    {% endif %}
+                    {% if object.video %}
+                        <video src="{{ object.video.url }}"  type="{{ object.video.content_type }}" class="rounded mb-3 mx-auto img-fluid " controls>
+                            
+                        </video>
+                    {% endif %}
+                </div>
+                {% if user.is_authenticated %}
+                    <form action="{% url 'like_post' post.pk %}" method="post">
+                        {% csrf_token %}
+                        {% if liked %}
+                            <button name= "post_id" value="{{ post.id }}" class="btn btn-sm btn-danger">DisLike</button>
+                        {% else %}
+                            <button name= "post_id" value="{{ post.id }}" class="btn btn-sm btn-primary">Like</button>
+                        {% endif %}
+                    </form>
+
+                    <small class="px-2 text-muted">
+                        {% if not post.comments.all %}
+                        {% comment %} if there are not any Comments {% endcomment %}
+                        No comments yet... <a href="#">Add one</a>
+                        {% else %}
+
+                        {% for comment in post.comments.all %}
+                            {% comment %} <li>{{ comment.content }} - {{ comment.user }} - {{ comment.date_commented | timesince}} ago</li> {% endcomment %}
+                            <div class="comment-card">
+                                <div class="comment">
+                                    <div class="user-info">
+                                            <span>{{ comment.user }} - {{ comment.date_commented | timesince}} ago</span>
+                                    </div>
+                                    <p>{{ comment.content }}</p>
+                                </div>
+                                <div class="actions">
+                                    <a href="#" class="like-link"><i class="far fa-thumbs-up"></i> Like</a>
+                                    <a href="#" class="reply-link"><i class="far fa-comment-alt"></i> Reply</a>
+                                </div>
+                            </div> 
+                        {% endfor %}
+
+                        {% endif %}
+                    </small>
+                {% endif %}
+
+                <div class="article-metadata ">
+                    <span>Reads: 132</span>
+                    <small class="px-2 text-muted">Likes: {{ object.total_likes }}</small>
+                </div>
+            </div>
+        </div>
+    </article>
+{% endblock content %}
+
